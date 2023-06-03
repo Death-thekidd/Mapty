@@ -3,7 +3,8 @@ const months: string[] = ['January', 'February', 'March', 'April', 'May', 'June'
 
 const form: HTMLFormElement = document.querySelector(".form")!;
 const containerWorkouts = document.querySelector(".workouts")!;
-const inputType = document.querySelector(".form__input--type")!;
+const inputType: HTMLSelectElement =
+	document.querySelector(".form__input--type")!;
 const inputDistance: HTMLInputElement = document.querySelector(
 	".form__input--distance"
 )!;
@@ -17,6 +18,54 @@ const inputElevation: HTMLInputElement = document.querySelector(
 	".form__input--elevation"
 )!;
 
+class Workout {
+	date = new Date();
+	id = (Date.now() + "").slice(-10);
+
+	constructor(public coords: any, public distance: any, public duration: any) {}
+}
+
+interface Running {
+	pace: number;
+}
+class Running extends Workout {
+	constructor(coords: any, distance: any, duration: any, public cadence: any) {
+		super(coords, distance, duration);
+		this.calcPace();
+	}
+
+	calcPace() {
+		//* min/km
+		this.pace = this.duration / this.distance;
+		return this.pace;
+	}
+}
+
+interface Cycling {
+	speed: number;
+}
+class Cycling extends Workout {
+	constructor(
+		coords: any,
+		distance: any,
+		duration: any,
+		public elevationGain: any
+	) {
+		super(coords, distance, duration);
+		this.calcSpeed();
+	}
+
+	calcSpeed() {
+		//* km/h
+		this.speed = this.distance / (this.duration / 60);
+		return this.speed;
+	}
+}
+
+const run1 = new Running([39, -12], 5.2, 24, 178);
+const cycling1 = new Cycling([39, -12], 5.2, 24, 523);
+console.log(run1, cycling1);
+
 class App {
 	private map: any;
 	private mapEvent: any;
@@ -25,6 +74,7 @@ class App {
 
 		form.addEventListener("submit", this.newWorkout.bind(this));
 
+		inputType.options[0].selected = true;
 		inputType.addEventListener("change", this.toggleElevationField.bind(this));
 	}
 
@@ -63,7 +113,8 @@ class App {
 		inputDistance.focus();
 	}
 
-	private toggleElevationField() {
+	private toggleElevationField(e: Event) {
+		e.preventDefault();
 		inputElevation.closest(".form__row")?.classList.toggle("form__row--hidden");
 		inputCadence.closest(".form__row")?.classList.toggle("form__row--hidden");
 	}
